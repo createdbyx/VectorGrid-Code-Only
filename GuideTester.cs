@@ -1,7 +1,5 @@
 ﻿namespace Codefarts.VectorGrid
 {
-    using System;
-
     using UnityEngine;
 
     [RequireComponent(typeof(Guides))]
@@ -13,7 +11,12 @@
         public void OnGUI()
         {
             var guide = this.GetComponent<Guides>();
-            GUI.Label(new Rect(100, 100, 100, 100), guide.HighlightPosition.ToString());
+            var text = guide.HighlightPosition.ToString();          
+            var rect = new Rect(100, 100, 100, 100);
+            var mousePosition = Input.mousePosition;
+            rect.x = mousePosition.x - 50;
+            rect.y = mousePosition.y - 25;
+            GUI.Label(rect, text);
         }
     }
 }

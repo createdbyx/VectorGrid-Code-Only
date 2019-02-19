@@ -1,5 +1,3 @@
-using Codefarts.VectorGrid;
-
 namespace Codefarts.VectorGrid
 {
     using System;
