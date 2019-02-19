@@ -1,8 +1,6 @@
-﻿namespace Codefarts.GeneralTools.Editor
+﻿namespace Codefarts.VectorGrid.Editor
 {
-    using System;
-
-    using Codefarts.GeneralTools.Scripts;
+    using System;        
 
     using UnityEditor;
 
@@ -24,7 +22,6 @@
             this.content = this.content ?? new GUIContent();
 
             var grid = this.target as VectorGrid;
-            //  this.DrawDefaultInspector();
 
             if (grid == null)
             {
@@ -50,7 +47,7 @@
             grid.MainColor = EditorGUILayout.ColorField("Main Color", grid.MainColor);
             grid.SubColor = EditorGUILayout.ColorField("Sub Color", grid.SubColor);
 
-            if (GUI.changed)
+            if (GUI.changed || changed)
             {
                 SceneView.RepaintAll();
             }
