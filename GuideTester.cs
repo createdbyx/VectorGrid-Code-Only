@@ -15,7 +15,7 @@
             var rect = new Rect(100, 100, 100, 100);
             var mousePosition = Input.mousePosition;
             rect.x = mousePosition.x - 50;
-            rect.y = mousePosition.y - 25;
+            rect.y = -mousePosition.y - 25;
             GUI.Label(rect, text);
         }
     }
