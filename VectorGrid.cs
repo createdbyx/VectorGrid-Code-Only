@@ -1,10 +1,7 @@
-namespace Codefarts.GeneralTools.Scripts
+namespace Codefarts.VectorGrid
 {
     using System;
     using System.Collections.Generic;
-
-    using Codefarts.GeneralTools.Code;
-    using Codefarts.GeneralTools.TypeVisualizers.Unity;
 
 #if PERFORMANCE
     using Codefarts.PerformanceTesting;
@@ -14,7 +11,7 @@ namespace Codefarts.GeneralTools.Scripts
     using UnityEngine.Rendering;
 
     [ExecuteInEditMode]
-    public class VectorGrid : MonoBehaviour
+    public partial class VectorGrid : MonoBehaviour
     {
         /// <summary>
         /// The backing field for the <see cref="ShowMain"/> property.
@@ -519,44 +516,7 @@ namespace Codefarts.GeneralTools.Scripts
                 handler(this, EventArgs.Empty);
             }
         }
-
-#if !UNITY_5
-        private void CreateLineMaterial()
-        {
-            if (this.gridMaterial == null)
-            {
-                this.gridMaterial = new Material("Shader \"Lines/Colored Blended\" {" +
-                                            "SubShader { Pass { " +
-                                            "    Blend SrcAlpha OneMinusSrcAlpha " +
-                                            "    ZWrite Off Cull Off Fog { Mode Off } " +
-                                            "    BindChannels {" +
-                                            "      Bind \"vertex\", vertex Bind \"color\", color }" +
-                                            "} } }");
-                this.gridMaterial.hideFlags = HideFlags.HideAndDontSave;
-                this.gridMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
-            }
-        }
-#else
-        private void CreateLineMaterial()
-        {
-            if (this.gridMaterial == null)
-            {
-                // Unity has a built-in shader that is useful for drawing
-                // simple colored things.
-                var shader = Shader.Find("Hidden/Internal-Colored");
-                this.gridMaterial = new Material(shader);
-                this.gridMaterial.hideFlags = HideFlags.HideAndDontSave;
-                // Turn on alpha blending
-                this.gridMaterial.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
-                this.gridMaterial.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
-                // Turn backface culling off
-                this.gridMaterial.SetInt("_Cull", (int)CullMode.Off);
-                // Turn off depth writes
-                this.gridMaterial.SetInt("_ZWrite", 0);
-            }
-        }
-#endif
-
+                         
         /// <summary>
         /// Start is called just before any of the Update methods is called the first time.
         /// </summary>

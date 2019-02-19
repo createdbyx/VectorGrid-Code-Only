@@ -1,4 +1,4 @@
-﻿namespace Codefarts.GeneralTools.Scripts
+﻿namespace Codefarts.VectorGrid
 {
     using UnityEngine;
 

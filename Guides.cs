@@ -1,11 +1,11 @@
-namespace Codefarts.GeneralTools.Scripts
+namespace Codefarts.VectorGrid
 {
     using System;
 
     using UnityEngine;
 
     [ExecuteInEditMode]
-    public class Guides : MonoBehaviour
+    public partial class Guides : MonoBehaviour
     {
         public enum SyncDirection
         {
@@ -162,43 +162,6 @@ namespace Codefarts.GeneralTools.Scripts
         public bool InfiniteGuidelines = false;
 
         public Transform origin;
-
-#if !UNITY_5
-        private void CreateLineMaterial()
-        {
-            if (!this.lineMaterial)
-            {
-                this.lineMaterial = new Material("Shader \"Lines/Colored Blended\" {" +
-                                                 "SubShader { Pass { " +
-                                                 "    Blend SrcAlpha OneMinusSrcAlpha " +
-                                                 "    ZWrite Off Cull Off Fog { Mode Off } " +
-                                                 "    BindChannels {" +
-                                                 "      Bind \"vertex\", vertex Bind \"color\", color }" +
-                                                 "} } }");
-                this.lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-                this.lineMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
-            }
-        } 
-#else
-        private void CreateLineMaterial()
-        {
-            if (!this.lineMaterial)
-            {
-                // Unity has a built-in shader that is useful for drawing
-                // simple colored things.
-                var shader = Shader.Find("Hidden/Internal-Colored");
-                this.lineMaterial = new Material(shader);
-                this.lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-                // Turn on alpha blending
-                this.lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                this.lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                // Turn backface culling off
-                this.lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-                // Turn off depth writes
-                this.lineMaterial.SetInt("_ZWrite", 0);
-            }
-        }
-#endif
 
         public void OnRenderObject()
         {

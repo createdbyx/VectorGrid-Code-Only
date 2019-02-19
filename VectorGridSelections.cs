@@ -1,14 +1,13 @@
-namespace Codefarts.GeneralTools.Scripts
+using Codefarts.VectorGrid;
+
+namespace Codefarts.VectorGrid
 {
     using System;
     using System.Collections.Generic;
-
-    using Codefarts.GeneralTools.Models;
-
     using UnityEngine;
 
     [ExecuteInEditMode]
-    public class VectorGridSelections : MonoBehaviour
+    public partial class VectorGridSelections : MonoBehaviour
     {
         [HideInInspector]
         public List<Point2D> Selections = new List<Point2D>();
@@ -128,43 +127,6 @@ namespace Codefarts.GeneralTools.Scripts
                 onCellDeselected(this, this.cellSelectedArgs);
             }
         }
-      
-#if !UNITY_5
-        private void CreateLineMaterial()
-        {
-            if (!this.gridMaterial)
-            {
-                this.gridMaterial = new Material("Shader \"Lines/Colored Blended\" {" +
-                                            "SubShader { Pass { " +
-                                            "    Blend SrcAlpha OneMinusSrcAlpha " +
-                                            "    ZWrite Off Cull Off Fog { Mode Off } " +
-                                            "    BindChannels {" +
-                                            "      Bind \"vertex\", vertex Bind \"color\", color }" +
-                                            "} } }");
-                this.gridMaterial.hideFlags = HideFlags.HideAndDontSave;
-                this.gridMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
-            }
-        }
-#else
-        private void CreateLineMaterial()
-        {
-            if (!this.gridMaterial)
-            {
-                // Unity has a built-in shader that is useful for drawing
-                // simple colored things.
-                var shader = Shader.Find("Hidden/Internal-Colored");
-                this.gridMaterial = new Material(shader);
-                this.gridMaterial.hideFlags = HideFlags.HideAndDontSave;
-                // Turn on alpha blending
-                this.gridMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                this.gridMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                // Turn backface culling off
-                this.gridMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-                // Turn off depth writes
-                this.gridMaterial.SetInt("_ZWrite", 0);
-            }
-        }
-#endif
 
         /// <summary>
         /// Update is called every frame, if the MonoBehaviour is enabled.
