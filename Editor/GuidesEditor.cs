@@ -1,7 +1,5 @@
-﻿namespace Codefarts.GeneralTools.Editor
-{
-    using Codefarts.GeneralTools.Scripts;
-
+﻿namespace Codefarts.VectorGrid.Editor
+{                                           
     using UnityEditor;
 
     using UnityEngine;
@@ -18,7 +16,6 @@
         public override void OnInspectorGUI()
         {
             var guides = this.target as Guides;
-            //  this.DrawDefaultInspector();
 
             if (guides == null)
             {
