@@ -4,18 +4,35 @@ namespace Codefarts.VectorGrid
 
     using UnityEngine;
 
+    /// <summary>
+    /// Provides guide lines for visually indicating where the pointer is on a grid.
+    /// </summary>
+    /// <seealso cref="UnityEngine.MonoBehaviour" />
     [ExecuteInEditMode]
     public partial class Guides : MonoBehaviour
     {
+        /// <summary>
+        /// Provides enums for determining sync direction.
+        /// </summary>
         public enum SyncDirection
-        {
+        {   
             UseDimensions,
             UseGuidelineDimensions
         }
 
+        /// <summary>
+        /// The line material used to render lines.
+        /// </summary>
         public Material lineMaterial;
 
+        /// <summary>
+        /// The guide color to be used when not rendering lines with a material.
+        /// </summary>
         public Color GuideColor = Color.yellow;
+        
+        /// <summary>
+        /// The highlight color to be used when not rendering lines with a material.
+        /// </summary>
         public Color HighlightColor = Color.red;
 
         public Vector3 HighlightOffset;

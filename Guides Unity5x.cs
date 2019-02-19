@@ -5,6 +5,9 @@ namespace Codefarts.VectorGrid
 #if UNITY_5_3_OR_NEWER
     public partial class Guides
     {
+        /// <summary>
+        /// Creates the material for drawing lines.
+        /// </summary>
         private void CreateLineMaterial()
         {
             var material = this.lineMaterial;
