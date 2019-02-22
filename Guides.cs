@@ -15,7 +15,7 @@ namespace Codefarts.VectorGrid
         /// Provides enums for determining sync direction.
         /// </summary>
         public enum SyncDirection
-        {   
+        {
             UseDimensions,
             UseGuidelineDimensions
         }
@@ -29,7 +29,7 @@ namespace Codefarts.VectorGrid
         /// The guide color to be used when not rendering lines with a material.
         /// </summary>
         public Color GuideColor = Color.yellow;
-        
+
         /// <summary>
         /// The highlight color to be used when not rendering lines with a material.
         /// </summary>
@@ -187,12 +187,8 @@ namespace Codefarts.VectorGrid
                 return;
             }
 
-            this.CreateLineMaterial();
-            var material = this.lineMaterial;
-            if (material != null)
-            {
-                material.SetPass(0);
-            }
+            this.lineMaterial = Helpers.CreateLineMaterial(this.lineMaterial);
+            this.lineMaterial.SetPass(0);
 
             var transformReference = this.origin == null ? this.transform : this.origin.transform;
             var position = transformReference.position;//+ this.Offset;// new Vector3(this.Offset.x, this.Offset.y, this.Offset.z);

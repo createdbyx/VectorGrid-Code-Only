@@ -580,7 +580,7 @@ namespace Codefarts.VectorGrid
             GL.PushMatrix();
             GL.MultMatrix(Matrix4x4.TRS(position, rotation, Vector3.one));
             GL.Begin(GL.LINES);
-
+                     
             var callback = new Action<float>(step =>
                 {
                     // layers

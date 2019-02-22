@@ -1,26 +1,27 @@
 namespace Codefarts.VectorGrid
 {
-    public partial class Guides
+    using UnityEngine;
+
+    public partial class Helpers
     {
 #if  UNITY_5 && !UNITY_5_3_OR_NEWER && !UNITY_2017_1_OR_NEWER && !UNITY_2018_1_OR_NEWER
-        /// <summary>
-        /// Creates the material for drawing lines.
-        /// </summary>
-        private void CreateLineMaterial()
+        public static Material CreateLineMaterial(Material material)
         {
-            if (!this.lineMaterial)
+            if (material == null)
             {
-                this.lineMaterial = new Material("Shader \"Lines/Colored Blended\" {" +
+                material = new Material("Shader \"Lines/Colored Blended\" {" +
                                                  "SubShader { Pass { " +
                                                  "    Blend SrcAlpha OneMinusSrcAlpha " +
                                                  "    ZWrite Off Cull Off Fog { Mode Off } " +
                                                  "    BindChannels {" +
                                                  "      Bind \"vertex\", vertex Bind \"color\", color }" +
                                                  "} } }");
-                this.lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-                this.lineMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
+                material.hideFlags = HideFlags.HideAndDontSave;
+                material.shader.hideFlags = HideFlags.HideAndDontSave;
             }
+
+            return material;
         } 
-#endif
+#endif 
     }
 }

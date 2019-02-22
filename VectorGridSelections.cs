@@ -198,7 +198,7 @@ namespace Codefarts.VectorGrid
                 return;
             }
 
-            this.CreateLineMaterial();
+            this.gridMaterial = Helpers.CreateLineMaterial(this.gridMaterial);
             this.gridMaterial.SetPass(0);
 
             Vector3 position;
