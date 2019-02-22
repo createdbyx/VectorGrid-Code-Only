@@ -1,6 +1,6 @@
 ﻿namespace Codefarts.VectorGrid.Editor
 {
-    using System;        
+    using System;
 
     using UnityEditor;
 
@@ -43,7 +43,8 @@
             grid.Offset = EditorGUILayout.Vector3Field("Offset", grid.Offset);
 
             grid.Origin = EditorGUILayout.ObjectField("Origin", grid.Origin, typeof(Transform), true) as Transform;
-            grid.GridMaterial = EditorGUILayout.ObjectField("Grid Material", grid.GridMaterial, typeof(Material), true) as Material;
+            grid.MainMaterial = EditorGUILayout.ObjectField("Main Material", grid.MainMaterial, typeof(Material), true) as Material;
+            grid.SubMaterial = EditorGUILayout.ObjectField("Sub Material", grid.SubMaterial, typeof(Material), true) as Material;
             grid.MainColor = EditorGUILayout.ColorField("Main Color", grid.MainColor);
             grid.SubColor = EditorGUILayout.ColorField("Sub Color", grid.SubColor);
 

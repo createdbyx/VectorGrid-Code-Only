@@ -7,10 +7,14 @@ namespace Codefarts.VectorGrid
     using Codefarts.PerformanceTesting;
 #endif
 
-    using UnityEngine;
     using UnityEngine.Rendering;
 
+    using UnityEngine;
+
     [ExecuteInEditMode]
+    [RequireComponent(typeof(MeshRenderer))]
+    [RequireComponent(typeof(MeshFilter))]
+    [AddComponentMenu("Codefarts/Vector Grid")]
     public partial class VectorGrid : MonoBehaviour
     {
         /// <summary>
@@ -23,13 +27,13 @@ namespace Codefarts.VectorGrid
         /// The backing field for the <see cref="ShowSub"/> property.
         /// </summary>
         [SerializeField]
-        private bool showSub = false;
+        private bool showSub;
 
         /// <summary>
         /// The backing field for the <see cref="UseMesh"/> property.
         /// </summary>
         [SerializeField]
-        private bool useMesh = false;
+        private bool useMesh;
 
         /// <summary>
         /// The backing field for the <see cref="Width"/> property.
@@ -74,10 +78,16 @@ namespace Codefarts.VectorGrid
         private Transform origin;
 
         /// <summary>
-        /// The backing field for the <see cref="GridMaterial"/> property.
+        /// The backing field for the <see cref="MainMaterial"/> property.
         /// </summary>
         [SerializeField]
-        private Material gridMaterial;
+        private Material mainMaterial;
+
+        /// <summary>
+        /// The backing field for the <see cref="SubMaterial"/> property.
+        /// </summary>
+        [SerializeField]
+        private Material subMaterial;
 
         /// <summary>
         /// The backing field for the <see cref="MainColor"/> property.
@@ -91,14 +101,38 @@ namespace Codefarts.VectorGrid
         [SerializeField]
         private Color subColor = new Color(0f, 0.5f, 0f, 1f);
 
+        /// <summary>
+        /// The mesh object that holds mesh information.
+        /// </summary>
         private Mesh mesh;
 
+        /// <summary>
+        /// The changed filed used to determine if a property change occured.
+        /// </summary>
+        /// <remarks>If set to true the mesh will be rebuild on the next call to <see cref="OnRenderObject"/>.</remarks>
         private bool changed;
+
+        /// <summary>
+        /// Holds a cached reference to a mesh renderer component.
+        /// </summary>
+        private MeshRenderer meshRenderer;
+
+        /// <summary>
+        /// Holds a cache d reference to a mesh filter component.
+        /// </summary>
+        private MeshFilter meshFilter;
 
         /// <summary>
         /// Occurs before drawing grid.
         /// </summary>
+        /// <remarks>Only raised when not rendering a mesh.</remarks>
         public event EventHandler BeforeDrawGrid;
+
+        /// <summary>
+        /// Occurs after drawing grid.
+        /// </summary>
+        /// <remarks>Only raised when not rendering a mesh.</remarks>
+        public event EventHandler AfterDrawGrid;
 
         /// <summary>
         /// Gets or sets a value indicating whether the main grid lines are shown.
@@ -116,6 +150,9 @@ namespace Codefarts.VectorGrid
             }
         }
 
+        /// <summary>
+        /// Updates the mesh vertex and index data.
+        /// </summary>
         private void UpdateMesh()
         {
             this.mesh = this.mesh == null ? new Mesh() : this.mesh;
@@ -125,17 +162,17 @@ namespace Codefarts.VectorGrid
                     var vectors = new List<Vector3>();
 
                     // layers
-                    for (float j = 0; j <= this.depth; j += step)
+                    for (var j = 0f; j <= this.depth; j += step)
                     {
                         //X axis lines
-                        for (float i = 0; i <= this.height; i += step)
+                        for (var i = 0f; i <= this.height; i += step)
                         {
                             vectors.Add(new Vector3(0 + this.offset.x, j + this.offset.y, i + this.offset.z));
                             vectors.Add(new Vector3(this.width + this.offset.x, j + this.offset.y, i + this.offset.z));
                         }
 
                         //Z axis lines
-                        for (float i = 0; i <= this.width; i += step)
+                        for (var i = 0f; i <= this.width; i += step)
                         {
                             vectors.Add(new Vector3(i + this.offset.x, j + this.offset.y, 0 + this.offset.z));
                             vectors.Add(new Vector3(i + this.offset.x, j + this.offset.y, this.height + this.offset.z));
@@ -143,9 +180,9 @@ namespace Codefarts.VectorGrid
                     }
 
                     // Y axis lines
-                    for (float i = 0; i <= this.height; i += step)
+                    for (var i = 0f; i <= this.height; i += step)
                     {
-                        for (float k = 0; k <= this.width; k += step)
+                        for (var k = 0f; k <= this.width; k += step)
                         {
                             vectors.Add(new Vector3(k + this.offset.x, 0 + this.offset.y, i + this.offset.z));
                             vectors.Add(new Vector3(k + this.offset.x, this.depth + this.offset.y, i + this.offset.z));
@@ -190,101 +227,22 @@ namespace Codefarts.VectorGrid
 
             // build mesh
             this.mesh.Clear();
+
+            // IndexFormat.UInt32 may not work on all platforms. Although this code is originally intended for in Editor use only.
+            this.mesh.indexFormat = IndexFormat.UInt32;
             this.mesh.vertices = vertexes;
             this.mesh.colors = colors;
             this.mesh.subMeshCount = 2;
 
             // set indecies
-            this.mesh.SetIndices(subIndicies, MeshTopology.Lines, 0);
-            this.mesh.SetIndices(mainIndicies, MeshTopology.Lines, 1);
+            this.mesh.SetIndices(mainIndicies, MeshTopology.Lines, 0);
+            this.mesh.SetIndices(subIndicies, MeshTopology.Lines, 1);
 
             // update data data
             this.mesh.UploadMeshData(false);
+
+            this.meshFilter.sharedMesh = this.mesh;
         }
-
-        //private void UpdateMesh()
-        //{
-        //    this.mesh = this.mesh == null ? new Mesh() : this.mesh;
-
-        //    var callback = new Func<float, Vector3[]>(step =>
-        //        {
-        //            var w = (int)(this.width / step);
-        //            var h = (int)(this.height / step);
-        //            var d = (int)(this.depth / step);
-
-        //            var vectors = new Vector3[w * h * d];
-        //            var index = 0;
-
-        //            for (float z = 0; z <= this.depth; z += this.depth)
-        //            {
-        //                for (float y = 0; y <= this.height; y += this.height)
-        //                {
-        //                    // x line
-        //                    vectors[index++] = new Vector3(0 + this.offset.x, z + this.offset.y, y + this.offset.z);
-        //                    vectors[index++] = new Vector3(this.width + this.offset.x, z + this.offset.y, y + this.offset.z);
-        //                }
-        //            }
-
-        //            return vectors;
-        //        });
-
-        //    var indiciesCallback = new Func<int[]>(step =>
-        //    {
-        //        var w = (int)(this.width / step);
-        //        var h = (int)(this.height / step);
-        //        var d = (int)(this.depth / step);
-
-        //        var indicies = new int[w * h * d * 2];
-        //        var xIndex = 0;
-        //        var yIndex = 0;
-        //        var zIndex = 0;
-        //        var index = 0;
-
-        //        //for (float y = 0; y <= this.height; y += step)
-        //        {
-        //            for (float x = 0; x <= this.width; x += step)
-        //            {
-        //                // x line
-        //                indicies[index++] = xIndex;
-        //                xIndex += (w * h) - w;
-        //                indicies[index++] = xIndex;
-        //            }
-        //        }
-
-        //        return indicies;
-        //    });
-
-        //    var mainVertexes = callback(this.LargeStep);
-        //    var subVertexes = callback(this.SmallStep);
-        //    var vertexes = new Vector3[subVertexes.Length + mainVertexes.Length];
-        //    subVertexes.CopyTo(vertexes, 0);
-        //    mainVertexes.CopyTo(vertexes, subVertexes.Length);
-
-        //    this.mesh.Clear();
-        //    this.mesh.vertices = vertexes;
-        //    var subIndicies = new int[subVertexes.Length];
-        //    var mainIndicies = new int[mainVertexes.Length];
-
-        //    var colors = new Color[vertexes.Length];
-        //    for (var i = 0; i < subIndicies.Length; i++)
-        //    {
-        //        subIndicies[i] = i;
-        //        colors[i] = this.SubColor;
-        //    }
-
-        //    for (var i = 0; i < mainIndicies.Length; i++)
-        //    {
-        //        mainIndicies[i] = i;
-        //        colors[i + subVertexes.Length] = this.MainColor;
-        //    }
-
-        //    this.mesh.colors = colors;
-
-        //    this.mesh.subMeshCount = 2;
-        //    this.mesh.SetIndices(subIndicies, MeshTopology.Lines, 0);
-        //    this.mesh.SetIndices(mainIndicies, MeshTopology.Lines, 1);
-        //    this.mesh.UploadMeshData(false);
-        //}
 
         /// <summary>
         /// Gets or sets a value indicating whether the sub grid lines are shown.
@@ -340,17 +298,50 @@ namespace Codefarts.VectorGrid
         /// Gets or sets the grid material used to render the grid lines.
         /// </summary>
         /// <remarks>Setting this to null will create a internal line drawing material.</remarks>
-        public Material GridMaterial
+        public Material MainMaterial
         {
             get
             {
-                return this.gridMaterial;
+                return this.mainMaterial;
             }
 
             set
             {
-                this.gridMaterial = value;
+                this.mainMaterial = value;
+                this.SetMeshRendererMaterial(0, value);
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the grid material used to render the grid sub lines.
+        /// </summary>
+        /// <remarks>Setting this to null will create a internal line drawing material.</remarks>
+        public Material SubMaterial
+        {
+            get
+            {
+                return this.subMaterial;
+            }
+
+            set
+            {
+                this.subMaterial = value;
+                this.SetMeshRendererMaterial(1, value);
+            }
+        }
+
+        private void SetMeshRendererMaterial(int index, Material mat)
+        {
+            if (this.meshRenderer.sharedMaterials.Length < index + 1)
+            {
+                var items = new Material[index + 1];
+                this.meshRenderer.sharedMaterials.CopyTo(items, 0);
+                items[index] = mat;
+                this.meshRenderer.sharedMaterials = items;
+            }
+
+            this.meshRenderer.sharedMaterials[index] = mat;
+
         }
 
         /// <summary>
@@ -501,11 +492,6 @@ namespace Codefarts.VectorGrid
         }
 
         /// <summary>
-        /// Occurs after drawing grid.
-        /// </summary>
-        public event EventHandler AfterDrawGrid;
-
-        /// <summary>
         /// Raises the <see cref="AfterDrawGrid"/> event.
         /// </summary>
         protected virtual void OnAfterDrawGrid()
@@ -516,12 +502,16 @@ namespace Codefarts.VectorGrid
                 handler(this, EventArgs.Empty);
             }
         }
-                         
+
         /// <summary>
         /// Start is called just before any of the Update methods is called the first time.
         /// </summary>
         public void Start()
         {
+            this.meshRenderer = this.GetComponent<MeshRenderer>();
+            this.meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            this.meshRenderer.receiveShadows = false;
+            this.meshFilter = this.GetComponent<MeshFilter>();
             this.UpdateMesh();
         }
 
@@ -530,7 +520,7 @@ namespace Codefarts.VectorGrid
         /// </summary>
         private void OnRenderObject()
         {
-            this.CreateLineMaterial();
+            this.mainMaterial = Helpers.CreateLineMaterial(this.mainMaterial);
             if (this.changed)
             {
                 this.UpdateMesh();
@@ -539,24 +529,29 @@ namespace Codefarts.VectorGrid
 
             if (this.useMesh)
             {
-                var transformReference = this.origin == null ? this.transform : this.origin.transform;
-                this.gridMaterial.SetPass(0);
-                if (this.ShowMain)
-                {
-                    Graphics.DrawMeshNow(this.mesh, transformReference.position, transformReference.rotation, 0);
-                }
+                this.meshRenderer.enabled = true;
+                //var transformReference = this.origin == null ? this.transform : this.origin.transform;
+                //this.mainMaterial.SetPass(0);
+                //if (this.ShowMain)
+                //{
+                //    Graphics.DrawMeshNow(this.mesh, transformReference.position, transformReference.rotation, 0);
+                //}
 
-                if (this.ShowSub)
-                {
-                    Graphics.DrawMeshNow(this.mesh, transformReference.position, transformReference.rotation, 1);
-                }
+                //if (this.ShowSub)
+                //{
+                //    Graphics.DrawMeshNow(this.mesh, transformReference.position, transformReference.rotation, 1);
+                //}
             }
             else
             {
+                this.meshRenderer.enabled = false;
                 this.RenderUsingGL();
             }
         }
 
+        /// <summary>
+        /// Renders the grid using low level graphics lib.
+        /// </summary>   
         private void RenderUsingGL()
         {
 #if PERFORMANCE
@@ -579,8 +574,6 @@ namespace Codefarts.VectorGrid
 #endif
                 return;
             }
-
-            this.gridMaterial.SetPass(0);
 
             var transformReference = this.origin == null ? this.transform : this.origin.transform;
             var position = transformReference.position; //+ this.Offset;// new Vector3(this.OffsetX, this.OffsetY, this.OffsetZ);
@@ -624,12 +617,14 @@ namespace Codefarts.VectorGrid
 
             if (this.showSub)
             {
+                this.mainMaterial.SetPass(0);
                 GL.Color(this.subColor);
                 callback(this.smallStep);
             }
 
             if (this.showMain)
             {
+                this.mainMaterial.SetPass(0);
                 GL.Color(this.mainColor);
                 callback(this.largeStep);
             }
