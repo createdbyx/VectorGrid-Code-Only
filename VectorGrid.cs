@@ -27,13 +27,13 @@ namespace Codefarts.VectorGrid
         /// The backing field for the <see cref="ShowSub"/> property.
         /// </summary>
         [SerializeField]
-        private bool showSub;
+        private bool showSub = true;
 
         /// <summary>
         /// The backing field for the <see cref="UseMesh"/> property.
         /// </summary>
         [SerializeField]
-        private bool useMesh;
+        private bool useMesh = true;
 
         /// <summary>
         /// The backing field for the <see cref="Width"/> property.
@@ -88,6 +88,12 @@ namespace Codefarts.VectorGrid
         /// </summary>
         [SerializeField]
         private Material subMaterial;
+
+        /// <summary>
+        /// The backing field for drawing lines in <see cref="RenderUsingGL"/>.
+        /// </summary>
+        [SerializeField]
+        private Material glMaterial;
 
         /// <summary>
         /// The backing field for the <see cref="MainColor"/> property.
@@ -332,16 +338,14 @@ namespace Codefarts.VectorGrid
 
         private void SetMeshRendererMaterial(int index, Material mat)
         {
-            if (this.meshRenderer.sharedMaterials.Length < index + 1)
+            var items = this.meshRenderer.sharedMaterials;
+            if (items.Length < index + 1)
             {
-                var items = new Material[index + 1];
-                this.meshRenderer.sharedMaterials.CopyTo(items, 0);
-                items[index] = mat;
-                this.meshRenderer.sharedMaterials = items;
+                Array.Resize(ref items, index + 1);
             }
 
-            this.meshRenderer.sharedMaterials[index] = mat;
-
+            items[index] = mat;
+            this.meshRenderer.sharedMaterials = items;
         }
 
         /// <summary>
@@ -408,6 +412,7 @@ namespace Codefarts.VectorGrid
             {
                 this.changed = this.changed || this.useMesh != value;
                 this.useMesh = value;
+                this.meshRenderer.enabled = value;
             }
         }
 
@@ -516,35 +521,25 @@ namespace Codefarts.VectorGrid
         }
 
         /// <summary>
-        /// OnRenderObject is called after camera has rendered the scene.
+        /// Update is called every frame, if the MonoBehaviour is enabled.
         /// </summary>
-        private void OnRenderObject()
+        public void Update()
         {
-            this.mainMaterial = Helpers.CreateLineMaterial(this.mainMaterial);
             if (this.changed)
             {
                 this.UpdateMesh();
                 this.changed = false;
             }
+        }
 
-            if (this.useMesh)
+        /// <summary>
+        /// OnRenderObject is called after camera has rendered the scene.
+        /// </summary>
+        private void OnRenderObject()
+        {
+            if (!this.useMesh)
             {
-                this.meshRenderer.enabled = true;
-                //var transformReference = this.origin == null ? this.transform : this.origin.transform;
-                //this.mainMaterial.SetPass(0);
-                //if (this.ShowMain)
-                //{
-                //    Graphics.DrawMeshNow(this.mesh, transformReference.position, transformReference.rotation, 0);
-                //}
-
-                //if (this.ShowSub)
-                //{
-                //    Graphics.DrawMeshNow(this.mesh, transformReference.position, transformReference.rotation, 1);
-                //}
-            }
-            else
-            {
-                this.meshRenderer.enabled = false;
+                this.glMaterial = Helpers.CreateLineMaterial(this.glMaterial);
                 this.RenderUsingGL();
             }
         }
@@ -575,8 +570,10 @@ namespace Codefarts.VectorGrid
                 return;
             }
 
+            this.glMaterial.SetPass(0);
+
             var transformReference = this.origin == null ? this.transform : this.origin.transform;
-            var position = transformReference.position; //+ this.Offset;// new Vector3(this.OffsetX, this.OffsetY, this.OffsetZ);
+            var position = transformReference.position;
             var rotation = transformReference.localRotation;
 
             this.OnBeforeDrawGrid();
@@ -617,14 +614,12 @@ namespace Codefarts.VectorGrid
 
             if (this.showSub)
             {
-                this.mainMaterial.SetPass(0);
                 GL.Color(this.subColor);
                 callback(this.smallStep);
             }
 
             if (this.showMain)
             {
-                this.mainMaterial.SetPass(0);
                 GL.Color(this.mainColor);
                 callback(this.largeStep);
             }
